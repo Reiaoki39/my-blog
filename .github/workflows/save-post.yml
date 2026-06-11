@@ -1,0 +1,29 @@
+name: Save Blog Post
+
+on:
+  repository_dispatch:
+    types: [save-post]
+
+permissions:
+  contents: write
+
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BLOG_TOKEN }}
+
+      - name: Save posts.json
+        run: |
+          echo '${{ toJson(github.event.client_payload.posts) }}' > posts.json
+
+      - name: Commit and push
+        run: |
+          git config user.name "NEXUS BLOG Bot"
+          git config user.email "bot@nexus-blog"
+          git add posts.json
+          git diff --cached --quiet || git commit -m "update posts"
+          git push
